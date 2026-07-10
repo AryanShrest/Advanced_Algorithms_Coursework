@@ -2,69 +2,6 @@
 Task 3a - Dynamic Programming
 Problem: Weighted Job Scheduling with Time Windows
 
-Each job j has a start time s(j), an end/finish time f(j) (the time window
-it occupies) and a profit p(j). Two jobs are compatible if their time
-windows do not overlap (job i and job j are compatible if f(i) <= s(j)
-or f(j) <= s(i)). The goal is to select a subset of mutually compatible
-jobs that maximises the total profit.
-
---------------------------------------------------------------------------
-SUBPROBLEM DEFINITION
---------------------------------------------------------------------------
-1. Sort all n jobs by finish time: f(1) <= f(2) <= ... <= f(n).
-2. For each job i, define p(i) = the largest index k < i such that job k
-   is compatible with job i (i.e. f(k) <= s(i)). This is found with
-   binary search over the sorted finish times -> O(log n) per job.
-3. Let OPT(i) = the maximum achievable profit considering only jobs
-   1..i (in finish-time order).
-
-RECURRENCE RELATION
-   OPT(0) = 0
-   OPT(i) = max( OPT(i-1),                      # exclude job i
-                 profit(i) + OPT(p(i)) )         # include job i
-   Answer = OPT(n)
-
-This is the classical "Weighted Interval Scheduling" recurrence, extended
-here with an explicit notion of a time window per job (start, end).
-
---------------------------------------------------------------------------
-MEMOISATION / BOTTOM-UP STRATEGY
---------------------------------------------------------------------------
-Two implementations are provided:
-  * top_down_memo()  - recursive, memoised with a dict/array cache.
-  * bottom_up_table() - iterative, fills a 1-D DP table OPT[0..n] in
-    increasing order of finish time, then reconstructs the chosen jobs
-    by walking the table backwards.
-
-Bottom-up is preferred in production code: it avoids recursion-depth
-limits for large n and has slightly better constant factors (no function
-call / stack-frame overhead per subproblem).
-
---------------------------------------------------------------------------
-COMPLEXITY ANALYSIS
---------------------------------------------------------------------------
-Let n = number of jobs.
-
-Sorting jobs by finish time:               O(n log n)
-Computing p(i) for every job (binary
-search over sorted starts):                O(n log n)
-Filling the DP table (n states, O(1)
-work per state given p(i) is
-precomputed):                              O(n)
-Reconstructing the solution:               O(n)
------------------------------------------------------
-TOTAL TIME:                                O(n log n)
-TOTAL SPACE:                               O(n)  (DP table + p(i) array)
-
-Hidden constant factor: each "O(1)" transition is actually 2-3 array
-reads, 1 comparison and 1 addition; the O(log n) binary searches involve
-list slicing/indexing overhead in Python (no low-level array access as in
-C). In practice the log-n binary search term and Python's interpreter
-overhead (attribute lookups, dynamic typing, list indexing) dominate the
-wall-clock time far more than the asymptotic bound suggests - this is why
-n log n Python code can be measurably slower than a naive O(n^2) solution
-written in C for small/medium n. The empirical section below quantifies
-this.
 """
 
 from __future__ import annotations
@@ -257,6 +194,6 @@ if __name__ == "__main__":
     bf = brute_force(sample_jobs)
     print(f"\nMax profit (brute force check): {bf}")
     assert bf == best_profit == best_profit_td, "DP result disagrees with brute force!"
-    print("DP results verified against brute force. ✔")
+    print("DP results verified against brute force. [OK]")
 
     empirical_timing()
